@@ -22,7 +22,7 @@ def find_most_active_player(pgn_file_path):
     return most_active_player, most_games, player_counts
 
 if __name__ == "__main__":
-    pgn_file = "example.pgn"  
+    pgn_file = "../data-sets/lichess_db_standard_rated_2016-11.pgn"
     most_active, games_played, all_players = find_most_active_player(pgn_file)
 
     print(f"🎉 The most active player is **{most_active}** with **{games_played}** games played!")

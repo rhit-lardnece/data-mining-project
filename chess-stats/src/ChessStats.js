@@ -59,7 +59,7 @@ const ChessStats = () => {
         <div className="bg-white p-4 rounded-lg shadow-lg w-96">
           <h2 className="text-xl font-semibold">Stats for {stats.username}</h2>
           <p><strong>Total Games:</strong> {stats.total_games}</p>
-          <p><strong>Win Percentage:</strong> {stats.win_percentage}%</p>
+          <p><strong>Win Percentage:</strong> {((stats.wins / (stats.wins + stats.losses)) * 100).toFixed(2)}%</p>
           <p><strong>Avg Opponent Rating:</strong> {stats.average_opponent_rating}</p>
           <p><strong>Most Frequent Opponent:</strong> {stats.most_common_opponent}</p>
 
@@ -71,15 +71,28 @@ const ChessStats = () => {
                 labels: ["Wins", "Losses"],
                 datasets: [
                   {
-                    data: [stats.win_percentage, 100 - stats.win_percentage],
+                    data: [stats.wins, stats.losses],
                     backgroundColor: ["#4CAF50", "#F44336"],
                   },
                 ],
               }}
+              options={{
+                plugins: {
+                  tooltip: {
+                    callbacks: {
+                      label: function (context) {
+                        const label = context.label || '';
+                        const value = context.raw;
+                        return `${label}: ${value}`;
+                      }
+                    }
+                  },
+                }
+              }}
             />
           </div>
 
-          {/*Combined Chart: Most Common Openings and Win Rates */}
+          {/* Combined Chart: Most Common Openings and Win Rates */}
           <div className="mt-4">
             <h3 className="text-lg font-semibold">Most Common Openings and Win Rates</h3>
             <Bar
@@ -141,6 +154,64 @@ const ChessStats = () => {
                 ],
               }}
               options={{ scales: { y: { beginAtZero: true } } }}
+            />
+          </div>
+
+          {/* PIE CHART: Higher Elo Win Percentage */}
+          <div className="mt-4">
+            <h3 className="text-lg font-semibold">Win Percentage Against Higher Elo Players</h3>
+            <Pie
+              data={{
+                labels: ["Wins", "Losses"],
+                datasets: [
+                  {
+                    data: [stats.higher_elo_wins, stats.higher_elo_losses],
+                    backgroundColor: ["#4CAF50", "#F44336"],
+                  },
+                ],
+              }}
+              options={{
+                plugins: {
+                  tooltip: {
+                    callbacks: {
+                      label: function (context) {
+                        const label = context.label || '';
+                        const value = context.raw;
+                        return `${label}: ${value}`;
+                      }
+                    }
+                  },
+                }
+              }}
+            />
+          </div>
+
+          {/* PIE CHART: Lower Elo Win Percentage */}
+          <div className="mt-4">
+            <h3 className="text-lg font-semibold">Win Percentage Against Lower Elo Players</h3>
+            <Pie
+              data={{
+                labels: ["Wins", "Losses"],
+                datasets: [
+                  {
+                    data: [stats.lower_elo_wins, stats.lower_elo_losses],
+                    backgroundColor: ["#4CAF50", "#F44336"],
+                  },
+                ],
+              }}
+              options={{
+                plugins: {
+                  tooltip: {
+                    callbacks: {
+                      label: function (context) {
+                        const label = context.label || '';
+                        const value = context.raw;
+                        return `${label}: ${value}`;
+                      }
+                    }
+                  },
+                }
+              }}
             />
           </div>
         </div>

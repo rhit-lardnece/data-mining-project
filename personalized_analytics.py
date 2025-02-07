@@ -5,14 +5,12 @@ import pandas as pd
 import collections
 import os
 import re
+import numpy as np  
 
 app = Flask(__name__)
 CORS(app)
 
 pgn_file = "datasets/example2.pgn"
-# pgn_file = "C:\\Users\\jadejaan\\Downloads\\lichess_db_standard_rated_2013-11.pgn"
-# pgn_file = "example.pgn"
-
 df_games = None
 
 def safe_int(value, default=0):
@@ -58,16 +56,14 @@ def load_pgn_to_dataframe(pgn_file_path):
     df_games = pd.DataFrame(games_list)
     print(f"Processing finished! Loaded {len(df_games)} games into DataFrame.")
 
-
 def get_user_stats(username):
     """Retrieve statistics for a specific player from the DataFrame."""
     global df_games
 
     if df_games is None or df_games.empty:
         return {"error": "No data loaded. Check the PGN file."}
-    print("Getting user stats")
-    user_games = df_games[(df_games["White"] == username) | (df_games["Black"] == username)]
-    user_games = user_games.copy() 
+
+    user_games = df_games[(df_games["White"] == username) | (df_games["Black"] == username)].copy()
     user_games.loc[:, "Opponent"] = user_games.apply(lambda row: row["Black"] if row["White"] == username else row["White"], axis=1)
 
     if user_games.empty:
@@ -80,31 +76,56 @@ def get_user_stats(username):
     draws = (user_games["Result"] == "1/2-1/2").sum()
 
     total_games = len(user_games)
-    win_percentage = (wins / total_games) * 100 if total_games > 0 else 0
-
     avg_rating = user_games[["WhiteElo", "BlackElo"]].mean().mean()
 
     user_games["MainOpening"] = user_games["Opening"].apply(lambda x: re.split(r'[:#,]', x)[0].strip())
+
     openings_count = user_games["MainOpening"].value_counts().reset_index()
     openings_count.columns = ["name", "count"] 
     openings_data = openings_count.to_dict(orient="records")
 
-    opening_winrates = user_games.groupby("MainOpening").apply(lambda x: ((x["White"] == username) & (x["Result"] == "1-0")).sum() + ((x["Black"] == username) & (x["Result"] == "0-1")).sum() / len(x) * 100).reset_index()
+    opening_winrates = user_games.groupby("MainOpening").apply(
+        lambda x: ((x["White"] == username) & (x["Result"] == "1-0")).sum() + 
+                  ((x["Black"] == username) & (x["Result"] == "0-1")).sum() / len(x) * 100
+    ).reset_index()
     opening_winrates.columns = ["name", "winrate"]
+    
+    # Convert to native Python types for JSON serialization
+    opening_winrates["winrate"] = opening_winrates["winrate"].astype(float)  
     opening_winrates_data = opening_winrates.to_dict(orient="records")
 
-    user_games["Opponent"] = user_games.apply(lambda row: row["Black"] if row["White"] == username else row["White"], axis=1)
     most_common_opponent = user_games["Opponent"].value_counts().idxmax() if not user_games["Opponent"].empty else "None"
+
+    user_games["OpponentElo"] = user_games.apply(lambda row: row["BlackElo"] if row["White"] == username else row["WhiteElo"], axis=1)
+    user_games["UserElo"] = user_games.apply(lambda row: row["WhiteElo"] if row["White"] == username else row["BlackElo"], axis=1)
+
+    higher_elo_games = user_games[user_games["OpponentElo"] > user_games["UserElo"]]
+    lower_elo_games = user_games[user_games["OpponentElo"] < user_games["UserElo"]]
+
+    higher_elo_wins = ((higher_elo_games["White"] == username) & (higher_elo_games["Result"] == "1-0")).sum() + \
+                      ((higher_elo_games["Black"] == username) & (higher_elo_games["Result"] == "0-1")).sum()
+    higher_elo_losses = ((higher_elo_games["White"] == username) & (higher_elo_games["Result"] == "0-1")).sum() + \
+                        ((higher_elo_games["Black"] == username) & (higher_elo_games["Result"] == "1-0")).sum()
+
+    lower_elo_wins = ((lower_elo_games["White"] == username) & (lower_elo_games["Result"] == "1-0")).sum() + \
+                     ((lower_elo_games["Black"] == username) & (lower_elo_games["Result"] == "0-1")).sum()
+    lower_elo_losses = ((lower_elo_games["White"] == username) & (lower_elo_games["Result"] == "0-1")).sum() + \
+                       ((lower_elo_games["Black"] == username) & (lower_elo_games["Result"] == "1-0")).sum()
 
     return {
         "username": username,
-        "total_games": total_games,
-        "win_percentage": round(win_percentage, 2),
-        "average_opponent_rating": round(avg_rating),
+        "total_games": int(total_games),
+        "wins": int(wins),
+        "losses": int(losses),
+        "average_opponent_rating": int(round(avg_rating)),
         "most_common_openings": openings_data,
         "opening_winrates": opening_winrates_data,
         "most_common_opponent": most_common_opponent,
-        "game_lengths": user_games["Moves"].tolist()
+        "game_lengths": [int(moves) for moves in user_games["Moves"].tolist()],
+        "higher_elo_wins": int(higher_elo_wins),
+        "higher_elo_losses": int(higher_elo_losses),
+        "lower_elo_wins": int(lower_elo_wins),
+        "lower_elo_losses": int(lower_elo_losses)
     }
 
 @app.route('/chess_stats', methods=['GET'])

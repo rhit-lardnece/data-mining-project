@@ -79,9 +79,9 @@ const ChessStats = () => {
             />
           </div>
 
-          {/* BAR CHART: Most Common Openings */}
+          {/*Combined Chart: Most Common Openings and Win Rates */}
           <div className="mt-4">
-            <h3 className="text-lg font-semibold">Most Common Openings</h3>
+            <h3 className="text-lg font-semibold">Most Common Openings and Win Rates</h3>
             <Bar
               data={{
                 labels: stats.most_common_openings.map((o) => o.name),
@@ -90,10 +90,39 @@ const ChessStats = () => {
                     label: "Number of Games",
                     data: stats.most_common_openings.map((o) => o.count),
                     backgroundColor: "#3498db",
+                    yAxisID: 'y',
+                  },
+                  {
+                    label: "Win Rate (%)",
+                    data: stats.opening_winrates.map((o) => o.winrate),
+                    backgroundColor: "#8e44ad",
+                    yAxisID: 'y1',
                   },
                 ],
               }}
-              options={{ scales: { y: { beginAtZero: true } } }}
+              options={{
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    position: 'left',
+                    title: {
+                      display: true,
+                      text: 'Number of Games',
+                    },
+                  },
+                  y1: {
+                    beginAtZero: true,
+                    position: 'right',
+                    title: {
+                      display: true,
+                      text: 'Win Rate (%)',
+                    },
+                    grid: {
+                      drawOnChartArea: false,
+                    },
+                  },
+                },
+              }}
             />
           </div>
 

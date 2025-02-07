@@ -28,7 +28,8 @@ def find_most_active_player(pgn_file_path):
     return most_active_player, most_games, player_counts
 
 if __name__ == "__main__":
-    pgn_file = "C:\\Users\\jadejaan\\Downloads\\lichess_db_standard_rated_2013-11.pgn"
+    # pgn_file = "C:\\Users\\jadejaan\\Downloads\\lichess_db_standard_rated_2013-11.pgn"
+    pgn_file = "datasets/example2.pgn"
 
     print(" Processing PGN file... This may take some time for large files.")
     most_active, games_played, all_players = find_most_active_player(pgn_file)

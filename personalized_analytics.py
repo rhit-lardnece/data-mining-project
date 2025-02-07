@@ -4,11 +4,13 @@ import chess.pgn
 import pandas as pd
 import collections
 import os
+import re
 
 app = Flask(__name__)
 CORS(app)
 
-pgn_file = "C:\\Users\\jadejaan\\Downloads\\lichess_db_standard_rated_2013-11.pgn"
+pgn_file = "datasets/example2.pgn"
+# pgn_file = "C:\\Users\\jadejaan\\Downloads\\lichess_db_standard_rated_2013-11.pgn"
 # pgn_file = "example.pgn"
 
 df_games = None
@@ -82,10 +84,14 @@ def get_user_stats(username):
 
     avg_rating = user_games[["WhiteElo", "BlackElo"]].mean().mean()
 
-
-    openings_count = user_games["Opening"].value_counts().reset_index()
+    user_games["MainOpening"] = user_games["Opening"].apply(lambda x: re.split(r'[:#,]', x)[0].strip())
+    openings_count = user_games["MainOpening"].value_counts().reset_index()
     openings_count.columns = ["name", "count"] 
     openings_data = openings_count.to_dict(orient="records")
+
+    opening_winrates = user_games.groupby("MainOpening").apply(lambda x: ((x["White"] == username) & (x["Result"] == "1-0")).sum() + ((x["Black"] == username) & (x["Result"] == "0-1")).sum() / len(x) * 100).reset_index()
+    opening_winrates.columns = ["name", "winrate"]
+    opening_winrates_data = opening_winrates.to_dict(orient="records")
 
     user_games["Opponent"] = user_games.apply(lambda row: row["Black"] if row["White"] == username else row["White"], axis=1)
     most_common_opponent = user_games["Opponent"].value_counts().idxmax() if not user_games["Opponent"].empty else "None"
@@ -96,6 +102,7 @@ def get_user_stats(username):
         "win_percentage": round(win_percentage, 2),
         "average_opponent_rating": round(avg_rating),
         "most_common_openings": openings_data,
+        "opening_winrates": opening_winrates_data,
         "most_common_opponent": most_common_opponent,
         "game_lengths": user_games["Moves"].tolist()
     }

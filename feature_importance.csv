@@ -1,0 +1,123 @@
+,importance,count
+difference,0.9528414494998404,74851
+opening_Latvian Gambit Accepted,0.19449794887003757,4
+opening_Danish Gambit Accepted,0.1915996278932794,5
+opening_Blumenfeld Countergambit,0.15169248044004532,3
+opening_Catalan Opening,0.14182421889168328,4
+opening_Guatemala Defense,0.12130435833338837,2
+opening_Neo-Gruenfeld Defense,0.11400803199751926,2
+opening_Center Game Accepted,0.10486855869972989,2
+opening_Danish Gambit,0.10052121153016084,14
+opening_Semi-Bononi,0.0990203474764751,2
+opening_Carr Defense,0.08890240769369837,2
+opening_Hippopotamus Defense,0.08491894359145404,1
+opening_Blackmar-Diemer Gambit Declined,0.07566173222797534,1
+opening_Portuguese Opening,0.0690299109081188,1
+opening_Old Indian,0.06646563553231932,1
+opening_Hungarian Opening,0.06425501690780727,76
+opening_Philidor Defense,0.06324218436848501,198
+opening_Scotch Game,0.056294608221199735,73
+opening_Horwitz Defense,0.05476157666650573,90
+opening_St. George Defense,0.05378330632183918,9
+opening_Barnes Defense,0.05153744296243815,8
+opening_Semi-Slav Defense,0.04690940560914481,26
+opening_Queen's Gambit Refused,0.04589988239946772,73
+opening_Scandinavian Defense,0.04519785612695048,248
+opening_Gruenfeld Defense,0.040190168812751684,6
+opening_Indian Game,0.03807415015468636,76
+opening_King's Pawn Game,0.03592469764901679,280
+opening_Vienna Game,0.03514740365454419,50
+opening_Queen's Pawn,0.03391153004873191,52
+opening_Queen's Pawn Game,0.03150587580913358,361
+opening_King's Gambit,0.031140640705448096,25
+opening_Reti Opening,0.02938657866680374,9
+opening_Slav Defense,0.028423463569280542,72
+opening_Queen's Gambit Accepted,0.027778488509754774,65
+opening_Bird Opening,0.02700408341778765,40
+opening_Ponziani Opening,0.026731872705727387,12
+opening_King's Gambit Declined,0.024291067008643828,33
+opening_Owen Defense,0.023950125400046384,70
+opening_Modern Defense,0.022100073337035685,125
+opening_Polish Defense,0.021209319770657806,12
+opening_Gedult's Opening,0.019396591114639903,14
+opening_Queen's Gambit,0.01820561776778358,11
+opening_King's Indian Defense,0.017115087261743777,26
+opening_Saragossa Opening,0.017027136973319076,40
+opening_Four Knights Game,0.01596366590122092,49
+opening_King's Pawn Opening,0.015261335196365173,5
+opening_Ware Defense,0.014854839449626067,2
+opening_Three Knights Opening,0.01409076524071645,26
+opening_Amazon Attack,0.0139518901542228,2
+opening_King's Gambit Accepted,0.013611827094078474,54
+opening_Mikenas Defense,0.012791543091735146,4
+opening_Bishop's Opening,0.012655996366788982,128
+opening_Danish Gambit Declined,0.011073097576954271,2
+opening_Ruy Lopez,0.01077935097895882,126
+opening_Nimzo-Indian Defense,0.010768649187680595,29
+opening_Polish Opening,0.009712128900134617,23
+opening_Trompowsky Attack,0.009483545325067526,4
+opening_Queen's Indian Accelerated,0.007066129761495648,4
+opening_Dutch Defense,0.006696863508980182,21
+opening_King's Indian Attack,0.004438162650114633,13
+opening_Englund Gambit,0.003975054562815215,12
+opening_Nimzo-Larsen Attack,0.0030463463452745886,51
+opening_Petrov's Defense,0.0016037016714447576,16
+opening_Zukertort Opening,0.0003968570411083541,80
+opening_Nimzowitsch Defense,-0.00040940865221749203,77
+opening_Russian Game,-0.0006600971162200687,44
+opening_Ware Opening,-0.0010434568675497947,2
+opening_Borg Defense,-0.001525591057436907,2
+opening_Lemming Defense,-0.001922175876744698,1
+opening_Bogo-Indian Defense,-0.001922175876744698,1
+opening_Mexican Defense,-0.001922175876744698,1
+opening_London System,-0.001922175876744698,1
+opening_Slav Indian,-0.001922175876744698,1
+opening_Benoni Defense,-0.0022550261025074316,31
+opening_Paleface Attack,-0.002382641952587127,4
+opening_Barnes Opening,-0.002718618278738247,2
+opening_Richter-Veresov Attack,-0.002718618278738247,2
+opening_Petrov,-0.002718618278738247,2
+opening_Franco-Benoni Defense,-0.005446065093611943,10
+opening_Torre Attack,-0.006035915082660996,5
+opening_Englund Gambit Complex Declined,-0.007974628859345204,3
+opening_Kangaroo Defense,-0.008150707295573188,2
+opening_Budapest Defense,-0.008299101833456035,12
+opening_Old Indian Defense,-0.011411911679359907,25
+opening_Van Geet Opening,-0.011842767893553763,19
+opening_Blackmar-Diemer Gambit,-0.013246707901289187,17
+opening_Englund Gambit Declined,-0.013428684049576877,20
+opening_Old Benoni Defense,-0.014067423642084707,30
+opening_Van't Kruijs Opening,-0.014524005724042178,235
+opening_Queen's Gambit Declined,-0.015036783690438742,116
+opening_Giuoco Piano,-0.017109022250677487,16
+opening_Grob Opening,-0.017636609931935162,5
+opening_Italian Game,-0.01793017109932026,203
+opening_Queen's Pawn Opening,-0.017998535795887675,4
+opening_Colle System,-0.01894135859092347,6
+opening_Kadas Opening,-0.02017814106385165,8
+opening_Englund Gambit Complex,-0.027484586831551926,6
+opening_Mieses Opening,-0.032013376458800584,58
+opening_Robatsch (Modern) Defense,-0.033345937926552875,22
+opening_English Opening,-0.0402391886537898,164
+opening_Gunderam Defense,-0.0431481761025447,3
+opening_Caro-Kann Defense,-0.052297206096213716,122
+opening_Center Game,-0.052656623067655735,56
+opening_Rat Defense,-0.05608178354643807,23
+opening_Elephant Gambit,-0.05664874180143842,11
+opening_Pirc Defense,-0.05874240788580362,83
+opening_King's Knight Opening,-0.060373665772595744,33
+opening_French Defense,-0.06858408454268193,414
+opening_English Defense,-0.07231241983459338,34
+opening_Lasker Simul Special,-0.07759201314254002,1
+opening_Nimzowitsch-Larsen Attack,-0.07899546244577167,1
+opening_Czech Defense,-0.08480526503372775,1
+opening_Yusupov-Rubinstein System,-0.08802966312575158,1
+opening_Sicilian Defense,-0.08861560921601551,507
+opening_Queen's Indian Defense,-0.09640281641643238,1
+opening_Ruy Lopez Defense,-0.09669878501231212,1
+opening_Anderssen Opening,-0.12824910402763523,2
+num_moves,-0.14286496390936923,345834
+opening_Goldsmith Defense,-0.15103014169946494,3
+opening_Tarrasch Defense,-0.1658785244179638,3
+opening_Canard Opening,-0.18926002843999418,3
+opening_Latvian Gambit,-0.25561617183604846,6

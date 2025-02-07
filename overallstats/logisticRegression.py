@@ -31,12 +31,12 @@ def extract_features(games: List[chess.pgn.Game]) -> Tuple[List[Dict], List[int]
         
         white_elo = int(game.headers["WhiteElo"]) if game.headers["WhiteElo"].isdigit() else 0
         black_elo = int(game.headers["BlackElo"]) if game.headers["BlackElo"].isdigit() else 0
+        difference = white_elo - black_elo
         opening = re.split(r'[:#,]', game.headers["Opening"])[0].strip()  # Extract main part of the opening
         num_moves = len(list(game.mainline_moves()))
         
         features.append({
-            "white_elo": white_elo,
-            "black_elo": black_elo,
+            "difference": difference,
             "opening": opening,
             "num_moves": num_moves,
         })

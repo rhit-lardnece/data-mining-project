@@ -8,7 +8,7 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-pgn_file = "C:\\Users\\jadejaan\\Downloads\\lichess_db_standard_rated_2013-11.pgn"
+pgn_file = "C:\\Users\\jadejaan\\Downloads\\lichess_db_standard_rated_2013-01.pgn"
 # pgn_file = "example.pgn"
 
 df_games = None
@@ -24,7 +24,7 @@ def load_pgn_to_dataframe(pgn_file_path):
     global df_games
     games_list = []
     game_count = 0
-    checkpoint = 50000 
+    checkpoint = 15000 
 
     if not os.path.exists(pgn_file_path):
         print(f"PGN file not found at: {pgn_file_path}")
@@ -94,6 +94,9 @@ def get_user_stats(username):
         "username": username,
         "total_games": total_games,
         "win_percentage": round(win_percentage, 2),
+        "wins": int(wins),
+        "losses": int(losses),
+        "draws": int(draws),
         "average_opponent_rating": round(avg_rating),
         "most_common_openings": openings_data,
         "most_common_opponent": most_common_opponent,
@@ -111,4 +114,4 @@ def chess_stats():
 
 if __name__ == '__main__':
     load_pgn_to_dataframe(pgn_file)
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=False, host="0.0.0.0", port=5000)

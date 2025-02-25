@@ -1,0 +1,24 @@
+description
+"Cluster 0: High in avg_elo, avg_opponent_elo, freq_Classical; Low in freq_Blitz, freq_Bullet"
+"Cluster 1: High in loss_rate, freq_Blitz; Low in avg_elo, win_rate, freq_Classical"
+"Cluster 2: High in win_rate, freq_Classical; Low in avg_opponent_elo, loss_rate, freq_Blitz"
+"Cluster 3: High in avg_elo, avg_opponent_elo, freq_Bullet; Low in freq_Blitz, freq_Classical"
+"Cluster 4: High in loss_rate, freq_Sicilian Defense; Low in win_rate"
+Cluster 5: High in freq_Italian Game; Low in 
+"Cluster 6: High in win_rate, freq_Blitz; Low in avg_opponent_elo, loss_rate, freq_Classical"
+Cluster 7: High in freq_Correspondence; Low in 
+Cluster 8: High in freq_Caro-Kann Defense; Low in 
+Cluster 9: High in freq_King's Pawn Game; Low in 
+Cluster 10: High in draw_rate; Low in 
+"Cluster 11: High in win_rate, freq_Sicilian Defense; Low in loss_rate"
+Cluster 12: High in freq_Modern Defense; Low in 
+"Cluster 13: High in avg_elo, avg_opponent_elo, freq_Blitz; Low in freq_Classical"
+Cluster 14: High in freq_Philidor Defense; Low in 
+Cluster 15: High in freq_Queen's Pawn Game; Low in 
+Cluster 16: High in freq_English Opening; Low in 
+Cluster 17: High in freq_French Defense; Low in 
+Cluster 18: High in freq_Modern Defense; Low in 
+"Cluster 19: High in loss_rate, freq_Classical; Low in avg_elo, win_rate, freq_Blitz"
+Cluster 20: High in freq_Scandinavian Defense; Low in 
+Cluster 21: High in freq_Philidor Defense; Low in 
+Cluster 22: High in freq_Bullet; Low in freq_Classical

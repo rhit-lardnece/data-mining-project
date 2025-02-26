@@ -114,13 +114,15 @@ def kmeans_endpoint():
     y_axis = data.get("y_axis", "avg_opponent_elo")
     reduction_method = data.get("reduction_method", "pca")
     plot_type = data.get("plot_type", "scatter")
+    feature_set = data.get("feature_set", "default")
+    use_all_features = feature_set == "all"
     try:
-        cache_key = f"kmeans_{num_clusters}_{x_axis}_{y_axis}_{reduction_method}_{plot_type}"
+        cache_key = f"kmeans_{num_clusters}_{x_axis}_{y_axis}_{reduction_method}_{plot_type}_{feature_set}"
         cached_result = cache.get(cache_key)
         if cached_result:
             return jsonify(cached_result)
         df_features = aggregate_player_features(df_games)
-        kmeans_result = perform_kmeans(df_features, num_clusters, x_axis, y_axis, reduction_method, plot_type)
+        kmeans_result = perform_kmeans(df_features, num_clusters, x_axis, y_axis, reduction_method, plot_type, use_all_features)
         cache.set(cache_key, kmeans_result, timeout=60*60*24)  
         return jsonify(kmeans_result)
     except Exception as e:

@@ -83,7 +83,7 @@ function PlayerComparison() {
       {comparisonResult && (
         <div className="mt-6 bg-white p-4 rounded shadow space-y-6">
           {/* Color-specific predictions */}
-          <div>
+          {/* <div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <h4 className="font-semibold">{player1}</h4>
@@ -104,7 +104,7 @@ function PlayerComparison() {
                 </ul>
               </div>
             </div>
-          </div>
+          </div> */}
           {/* Color-agnostic prediction */}
           <div>
             <h3 className="text-xl font-bold mb-2">Prediction</h3>

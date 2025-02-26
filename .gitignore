@@ -174,3 +174,6 @@ features.csv
 
 # Datasets
 datasets/lichess_2016-04.pgn
+chess-stats/datasets/example3.pgn
+.gitignore
+chess-stats/datasets/lichess_2016-04.pgn

@@ -104,23 +104,6 @@ def example_usernames():
         logger.exception("Error in /example_usernames endpoint")
         return jsonify({"error": str(e)}), 500
 
-@app.route("/api/logistic-regression", methods=["POST"])
-def logistic_regression_endpoint():
-    data = request.get_json()
-    required = ["color", "opening", "whiteElo", "blackElo"]
-    if not data or not all(field in data for field in required):
-        return jsonify({"error": f"Missing required fields: {required}"}), 400
-    try:
-        cache_key = f"logistic_regression_{data['color']}_{data['opening']}_{data['whiteElo']}_{data['blackElo']}"
-        cached_result = cache.get(cache_key)
-        if cached_result:
-            return jsonify(cached_result)
-        else:
-            return jsonify({"error": "Logistic regression result not found."}), 404
-    except Exception as e:
-        logger.exception("Error in /api/logistic-regression endpoint")
-        return jsonify({"error": str(e)}), 500
-
 @app.route("/api/kmeans", methods=["POST"])
 def kmeans_endpoint():
     data = request.get_json()
@@ -129,13 +112,17 @@ def kmeans_endpoint():
     num_clusters = int(data.get("num_clusters", 3))
     x_axis = data.get("x_axis", "avg_elo")
     y_axis = data.get("y_axis", "avg_opponent_elo")
+    reduction_method = data.get("reduction_method", "pca")
+    plot_type = data.get("plot_type", "scatter")
     try:
-        cache_key = f"kmeans_{num_clusters}_{x_axis}_{y_axis}"
+        cache_key = f"kmeans_{num_clusters}_{x_axis}_{y_axis}_{reduction_method}_{plot_type}"
         cached_result = cache.get(cache_key)
         if cached_result:
             return jsonify(cached_result)
-        else:
-            return jsonify({"error": "K-means result not found."}), 404
+        df_features = aggregate_player_features(df_games)
+        kmeans_result = perform_kmeans(df_features, num_clusters, x_axis, y_axis, reduction_method, plot_type)
+        cache.set(cache_key, kmeans_result, timeout=60*60*24)  
+        return jsonify(kmeans_result)
     except Exception as e:
         logger.exception("Error in /api/kmeans endpoint")
         return jsonify({"error": str(e)}), 500
@@ -152,8 +139,8 @@ def top_players():
         logger.exception("Error in /top_players endpoint")
         return jsonify({"error": str(e)}), 500
 
-@app.route("/api/compare_players", methods=["POST"])
-def compare_players_endpoint():
+@app.route("/compare_players", methods=["POST"])
+def logistic_regression_endpoint():
     data = request.get_json()
     required = ["player1", "player2"]
     if not data or not all(field in data for field in required):
@@ -161,16 +148,31 @@ def compare_players_endpoint():
     try:
         player1 = data["player1"]
         player2 = data["player2"]
-        
-        cache_key = f"compare_{player1}_{player2}"
-        cached_result = cache.get(cache_key)
-        if cached_result:
-            return jsonify(cached_result)
-        else:
-            return jsonify({"error": "Comparison result not found."}), 404
+
+        model, scaler, feature_list, metrics = cache.get("logistic_model")
+        if not model or not scaler or not feature_list:
+            return jsonify({"error": "Logistic model not found in cache."}), 500
+
+        prediction_details = predict_logistic(model, scaler, feature_list, df_games, player1, player2)
+        if "error" in prediction_details:
+            return jsonify({"error": prediction_details["error"]}), 404
+
+        comparison_result = {
+            "color_specific": prediction_details.get("color_specific"),
+            "color_agnostic": prediction_details.get("color_agnostic"),
+            "top_opening_predictions": prediction_details.get("top_opening_predictions"),
+            "player1": prediction_details.get("player1_stats"),
+            "player2": prediction_details.get("player2_stats"),
+            "comparison_basis": "Logistic regression prediction",
+            "model_accuracy": metrics["test_accuracy"],
+            "cross_validation_score": metrics["cv_accuracy"],
+            "full_feature_importances": metrics["feature_importance"]
+        }
+
+        return jsonify(comparison_result)
     except Exception as e:
-        logger.exception("Error in /api/compare_players endpoint")
-        return jsonify({"error": str(e)}), 500
+        logger.exception("Error in /compare_players endpoint")
+        return jsonify({"error": "An unexpected error occurred. Please try again later."}), 500
 
 if __name__ == "__main__":
     logger.info("Starting development server with detailed logs on port 5000...")

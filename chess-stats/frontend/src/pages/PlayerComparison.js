@@ -23,10 +23,10 @@ function PlayerComparison() {
     fetchExamples();
   }, []);
 
-  const setUsername = (username, player) => {
-    if (player === 1) {
+  const setUsername = (username) => {
+    if (!player1) {
       setPlayer1(username);
-    } else if (player === 2) {
+    } else if (!player2) {
       setPlayer2(username);
     }
   };
@@ -35,18 +35,14 @@ function PlayerComparison() {
     setError(null);
     setLoading(true);
     try {
-      const response = await fetch("/api/compare_players", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ player1, player2 }),
+      const response = await axios.post("/compare_players", {
+        player1,
+        player2
       });
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error("Network response was not ok");
       }
-      const data = await response.json();
-      setComparisonResult(data);
+      setComparisonResult(response.data);
     } catch (error) {
       setError("Error fetching comparison data. Please try again.");
       setComparisonResult(null);
@@ -56,7 +52,7 @@ function PlayerComparison() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto p-4">
       <h2 className="text-3xl font-bold mb-4">Player Comparison</h2>
       <div className="flex flex-col md:flex-row md:space-x-4 mb-4">
         <input
@@ -74,7 +70,7 @@ function PlayerComparison() {
           className="p-2 border rounded flex-1"
         />
       </div>
-      <ExampleUsernames examples={examples} setUsername={setUsername} />
+      <ExampleUsernames examples={examples} setUsername={setUsername} player1={player1} player2={player2} />
 
       <button
         onClick={handleCompare}
@@ -85,85 +81,73 @@ function PlayerComparison() {
       {loading && <p className="mt-4">Comparing players...</p>}
       {error && <p className="mt-4 text-red-500">{error}</p>}
       {comparisonResult && (
-        <div className="mt-6 bg-white p-4 rounded shadow">
-          <h3 className="text-xl font-bold mb-2">Comparison Result</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h4 className="font-semibold">{comparisonResult.player1.username}</h4>
-              <p>Total Games: {comparisonResult.player1.total_games}</p>
-              <p>Average Rating: {comparisonResult.player1.average_rating}</p>
-              <p>Wins: {comparisonResult.player1.wins}</p>
-              <p>Losses: {comparisonResult.player1.losses}</p>
-              <p>Draws: {comparisonResult.player1.draws}</p>
-              <h5 className="font-semibold mt-2">Prediction Details:</h5>
-              <p>Result: {comparisonResult.prediction_details_player1.result}</p>
-              <p>Feature Contributions:</p>
-              <ul>
-                {comparisonResult.prediction_details_player1.feature_contributions.map(([feature, value]) => (
-                  <li key={feature}>{feature}: {value.toFixed(4)}</li>
-                ))}
-              </ul>
-              {comparisonResult.prediction_details_player1.opening_effects && (
-                <div className="mt-4">
-                  <h4 className="font-semibold">Opening Effects on Prediction (Player 1):</h4>
-                  <ul>
-                    {Object.entries(comparisonResult.prediction_details_player1.opening_effects).map(([opening, result]) => (
-                      <li key={opening}>{opening}: {result}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {comparisonResult && comparisonResult.prediction_details_player1 && (
-                <div className="mt-4">
-                  <h4 className="font-semibold">Opening Effects on Prediction (Player 1):</h4>
-                  <ul>
-                    {Object.entries(comparisonResult.prediction_details_player1.opening_effects).map(([opening, result]) => (
-                      <li key={opening}>{opening}: {result}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-            <div>
-              <h4 className="font-semibold">{comparisonResult.player2.username}</h4>
-              <p>Total Games: {comparisonResult.player2.total_games}</p>
-              <p>Average Rating: {comparisonResult.player2.average_rating}</p>
-              <p>Wins: {comparisonResult.player2.wins}</p>
-              <p>Losses: {comparisonResult.player2.losses}</p>
-              <p>Draws: {comparisonResult.player2.draws}</p>
-              <h5 className="font-semibold mt-2">Prediction Details:</h5>
-              <p>Result: {comparisonResult.prediction_details_player2.result}</p>
-              <p>Feature Contributions:</p>
-              <ul>
-                {comparisonResult.prediction_details_player2.feature_contributions.map(([feature, value]) => (
-                  <li key={feature}>{feature}: {value.toFixed(4)}</li>
-                ))}
-              </ul>
-              {comparisonResult.prediction_details_player2.opening_effects && (
-                <div className="mt-4">
-                  <h4 className="font-semibold">Opening Effects on Prediction (Player 2):</h4>
-                  <ul>
-                    {Object.entries(comparisonResult.prediction_details_player2.opening_effects).map(([opening, result]) => (
-                      <li key={opening}>{opening}: {result}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {comparisonResult && comparisonResult.prediction_details_player2 && (
-                <div className="mt-4">
-                  <h4 className="font-semibold">Opening Effects on Prediction (Player 2):</h4>
-                  <ul>
-                    {Object.entries(comparisonResult.prediction_details_player2.opening_effects).map(([opening, result]) => (
-                      <li key={opening}>{opening}: {result}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+        <div className="mt-6 bg-white p-4 rounded shadow space-y-6">
+          {/* Color-specific predictions */}
+          <div>
+            <h3 className="text-xl font-bold mb-2">Color-Specific Prediction</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h4 className="font-semibold">{player1} as White</h4>
+                <p>Prediction: {comparisonResult.color_specific.player1_as_white.prediction}</p>
+                <p>Top 5 Feature Contributions:</p>
+                <ul>
+                  {comparisonResult.color_specific.player1_as_white.short_feature_contributions.map(([feature, value]) => (
+                    <li key={feature}>{feature}: {value.toFixed(4)}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold">{player2} as Black</h4>
+                <p>Prediction: {comparisonResult.color_specific.player2_as_black.prediction}</p>
+                <p>Top 5 Feature Contributions:</p>
+                <ul>
+                  {comparisonResult.color_specific.player2_as_black.short_feature_contributions.map(([feature, value]) => (
+                    <li key={feature}>{feature}: {value.toFixed(4)}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
-          <div className="mt-4">
-            <p className="font-bold">Predicted Winner: {comparisonResult.predicted_winner}</p>
-            <p>Basis: {comparisonResult.comparison_basis}</p>
+          {/* Color-agnostic prediction */}
+          <div>
+            <h3 className="text-xl font-bold mb-2">Color-Agnostic Prediction</h3>
+            <p>Based solely on average ratings:</p>
+            <p>{player1} Average Rating: {comparisonResult.color_agnostic.player1_average_rating}</p>
+            <p>{player2} Average Rating: {comparisonResult.color_agnostic.player2_average_rating}</p>
+            <p>Prediction: {comparisonResult.color_agnostic.prediction}</p>
+          </div>
+          {/* Top openings predictions */}
+          {/* <div>
+            <h3 className="text-xl font-bold mb-2">Top Openings Wins and Losses</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h4 className="font-semibold">{player1} Top Openings</h4>
+                <ul>
+                  {comparisonResult.top_opening_predictions.player1.map(item => (
+                    <li key={item.opening}>
+                      {item.opening}: {item.wins} wins, {item.losses} losses
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold">{player2} Top Openings</h4>
+                <ul>
+                  {comparisonResult.top_opening_predictions.player2.map(item => (
+                    <li key={item.opening}>
+                      {item.opening}: {item.wins} wins, {item.losses} losses
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div> */}
+          {/* Additional info if needed */}
+          <div>
+            <p className="font-bold">Additional details:</p>
+            <p>Comparison Basis: {comparisonResult.comparison_basis}</p>
+            <p>Model Accuracy: {comparisonResult.model_accuracy}</p>
+            <p>Cross Validation Score: {comparisonResult.cross_validation_score}</p>
           </div>
         </div>
       )}

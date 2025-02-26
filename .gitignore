@@ -173,5 +173,4 @@ cython_debug/
 features.csv
 
 # Datasets
-datasets/
 datasets/lichess_2016-04.pgn

@@ -1,8 +1,11 @@
+import matplotlib
+matplotlib.use("Agg")
 import pandas as pd
 import logging
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE  # new import
 from sklearn.metrics import silhouette_score
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -37,22 +40,29 @@ def aggregate_player_features(df):
     logger.info("Aggregated player features shape: %s", df_features.shape)
     return df_features
 
-def perform_kmeans(df, num_clusters, x_axis="avg_elo", y_axis="avg_opponent_elo"):
+def perform_kmeans(df, num_clusters, x_axis="avg_elo", y_axis="avg_opponent_elo", reduction_method="pca", plot_type="scatter"):
     logger.info("Performing KMeans clustering on %s and %s with %d clusters", x_axis, y_axis, num_clusters)
     if x_axis not in df.columns or y_axis not in df.columns:
         raise ValueError("Invalid x_axis or y_axis parameter.")
     X = df[[x_axis, y_axis]].values
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
-    kmeans = KMeans(n_clusters=num_clusters, random_state=42)
+    # Use kmeans++ initialization.
+    kmeans = KMeans(n_clusters=num_clusters, init="k-means++", random_state=42)
     labels = kmeans.fit_predict(X_scaled)
     df["cluster"] = labels
-    sil_score = silhouette_score(X_scaled, labels)
-    pca = PCA(n_components=2, random_state=42)
-    X_pca = pca.fit_transform(X_scaled)
-    df["pca1"] = X_pca[:, 0]
-    df["pca2"] = X_pca[:, 1]
 
+    sil_score = silhouette_score(X_scaled, labels)
+    
+    # Always use PCA for dimensionality reduction.
+    logger.info("Using PCA for dimensionality reduction")
+    reducer = PCA(n_components=2, random_state=42)
+    X_reduced = reducer.fit_transform(X_scaled)
+    df["dim1"] = X_reduced[:, 0]
+    df["dim2"] = X_reduced[:, 1]
+
+    # Always generate a scatter plot.
+    logger.info("Generating scatter plot")
     plt.figure(figsize=(8, 6))
     sns.scatterplot(x=x_axis, y=y_axis, hue="cluster", data=df, palette="viridis")
     plt.title("KMeans Clustering")
@@ -74,7 +84,8 @@ def perform_kmeans(df, num_clusters, x_axis="avg_elo", y_axis="avg_opponent_elo"
         "silhouette_score": sil_score,
         "player_features": df.to_dict(orient="records"),
         "centroids": kmeans.cluster_centers_.tolist(),
-        "pca_explained_variance": pca.explained_variance_ratio_.tolist(),
+        "dimension_reduction": "pca",
+        "plot_type": "scatter",
         "scatter_plot": plot_base64,
         "cluster_summary": cluster_summary
     }

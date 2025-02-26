@@ -70,6 +70,30 @@ def get_detailed_stats(df, username):
     higher_elo_losses = higher_games_count - higher_wins
     lower_elo_losses = lower_games_count - lower_wins
 
+    # Calculate stats per variant
+    variants = user_games["Variant"].unique()
+    variant_stats = {}
+    for variant in variants:
+        variant_games = user_games[user_games["Variant"] == variant]
+        variant_wins = (
+            ((variant_games["White"] == username) & (variant_games["Result"] == "1-0")).sum() +
+            ((variant_games["Black"] == username) & (variant_games["Result"] == "0-1")).sum()
+        )
+        variant_losses = (
+            ((variant_games["White"] == username) & (variant_games["Result"] == "0-1")).sum() +
+            ((variant_games["Black"] == username) & (variant_games["Result"] == "1-0")).sum()
+        )
+        variant_draws = (variant_games["Result"] == "1/2-1/2").sum()
+        variant_total_games = len(variant_games)
+        variant_openings = variant_games["MainOpening"].value_counts().to_dict()
+        variant_stats[variant] = {
+            "total_games": variant_total_games,
+            "wins": int(variant_wins),
+            "losses": int(variant_losses),
+            "draws": int(variant_draws),
+            "openings_distribution": variant_openings
+        }
+
     stats = {
         "username": username,
         "total_games": total_games,
@@ -86,7 +110,8 @@ def get_detailed_stats(df, username):
         "higher_elo_wins": int(higher_wins),
         "higher_elo_losses": int(higher_elo_losses),
         "lower_elo_wins": int(lower_wins),
-        "lower_elo_losses": int(lower_elo_losses)
+        "lower_elo_losses": int(lower_elo_losses),
+        "variant_stats": variant_stats
     }
     logger.info("Detailed stats computed for user: %s", username)
     return stats

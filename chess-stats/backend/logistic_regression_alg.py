@@ -5,6 +5,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import accuracy_score
+from personalized_stats_alg import get_detailed_stats
 
 logger = logging.getLogger(__name__)
 
@@ -53,46 +54,86 @@ def train_logistic_model(df):
     logger.info("Model trained. Test accuracy: %.4f", test_acc)
     return model, scaler, feature_list, metrics
 
-def predict_logistic(model, scaler, feature_list, input_data):
-    logger.info("Making logistic regression prediction...")
+def predict_logistic(model, scaler, feature_list, df_games, player1, player2):
+    logger.info("Fetching player data and making logistic regression prediction...")
     try:
-        color = input_data["color"].lower()
-        opening_input = input_data["opening"]
-        whiteElo = float(input_data["whiteElo"])
-        blackElo = float(input_data["blackElo"])
-        num_moves = float(input_data.get("num_moves", 40))
-        diff = whiteElo - blackElo if color == "white" else blackElo - whiteElo
-        feature_row = {col: 0 for col in feature_list}
-        feature_row["difference"] = diff
-        feature_row["num_moves"] = num_moves
-        opening_col = f"opening_{opening_input}"
-        if opening_col in feature_row:
-            feature_row[opening_col] = 1
-        df_input = pd.DataFrame([feature_row])
-        X_input = scaler.transform(df_input)
-        pred = model.predict(X_input)[0]
-        result = "White wins" if pred == 1 else "Black wins"
-        
-        feature_importance = model.coef_[0]
-        feature_contributions = {feature: importance * value for feature, importance, value in zip(feature_list, feature_importance, X_input[0])}
-        sorted_contributions = sorted(feature_contributions.items(), key=lambda x: abs(x[1]), reverse=True)
-        
-        opening_effects = {}
-        for opening in feature_list:
-            if opening.startswith("opening_"):
-                temp_feature_row = feature_row.copy()
-                temp_feature_row[opening] = 1
-                df_temp_input = pd.DataFrame([temp_feature_row])
-                X_temp_input = scaler.transform(df_temp_input)
-                temp_pred = model.predict(X_temp_input)[0]
-                opening_effects[opening] = "White wins" if temp_pred == 1 else "Black wins"
-        
-        logger.info("Logistic regression prediction: %s", result)
+        player1Stats = get_detailed_stats(df_games, player1)
+        player2Stats = get_detailed_stats(df_games, player2)
+        if "error" in player1Stats or "error" in player2Stats:
+            return {"error": "Error fetching player statistics."}
+
+        def create_feature_row(p_stats, o_stats):
+            diff = p_stats["average_rating"] - o_stats["average_rating"]
+            row = {col: 0 for col in feature_list}
+            row["difference"] = diff
+            row["num_moves"] = p_stats["total_games"]
+
+            for op in p_stats.get("most_common_openings", []):
+                col = f"opening_{op['name']}"
+                if col in row: row[col] = 1
+            return row
+
+        base_row1 = create_feature_row(player1Stats, player2Stats)
+        base_row2 = create_feature_row(player2Stats, player1Stats)
+        df_input1 = pd.DataFrame([base_row1])
+        df_input2 = pd.DataFrame([base_row2])
+        X_input1 = scaler.transform(df_input1)
+        X_input2 = scaler.transform(df_input2)
+        pred1 = model.predict(X_input1)[0]
+        pred2 = model.predict(X_input2)[0]
+        result1 = "Player 1 wins" if pred1 == 1 else "Player 2 wins"
+        result2 = "Player 2 wins" if pred2 == 1 else "Player 1 wins"
+        overall_winner = "Player 1" if pred1 == 1 else "Player 2"
+
+        feat_imp = model.coef_[0]
+        fc1 = {f: imp * val for f, imp, val in zip(feature_list, feat_imp, X_input1[0])}
+        fc2 = {f: imp * val for f, imp, val in zip(feature_list, feat_imp, X_input2[0])}
+        sorted_fc1 = sorted(fc1.items(), key=lambda x: abs(x[1]), reverse=True)
+        sorted_fc2 = sorted(fc2.items(), key=lambda x: abs(x[1]), reverse=True)
+        short_fc1 = sorted_fc1[:5]
+        short_fc2 = sorted_fc2[:5]
+
+        overall_agnostic = "Player 1 wins" if player1Stats["average_rating"] > player2Stats["average_rating"] else "Player 2 wins"
+
+        def opening_predictions(p_stats, base_row):
+            predictions = []
+            top_openings = p_stats.get("most_common_openings", [])[:5]
+            for op in top_openings:
+                wins = op.get("wins", 0)
+                losses = op.get("losses", 0)
+                predictions.append({"opening": op["name"], "wins": wins, "losses": losses})
+            return predictions
+
+        op_preds1 = opening_predictions(player1Stats, base_row1)
+        op_preds2 = opening_predictions(player2Stats, base_row2)
+
+        logger.info("Logistic regression prediction: %s", overall_winner)
         return {
-            "result": result,
-            "feature_contributions": sorted_contributions,
-            "opening_effects": opening_effects
+            "result1": result1,
+            "result2": result2,
+            "overall_winner": overall_winner,
+            "color_specific": {
+                "player1_as_white": {
+                    "prediction": result1,
+                    "short_feature_contributions": short_fc1
+                },
+                "player2_as_black": {
+                    "prediction": result2,
+                    "short_feature_contributions": short_fc2
+                }
+            },
+            "color_agnostic": {
+                "prediction": overall_agnostic,
+                "player1_average_rating": player1Stats["average_rating"],
+                "player2_average_rating": player2Stats["average_rating"]
+            },
+            "top_opening_predictions": {
+                "player1": op_preds1,
+                "player2": op_preds2
+            },
+            "player1_stats": player1Stats,
+            "player2_stats": player2Stats
         }
     except Exception as e:
         logger.exception("Error in predict_logistic function")
-        return None
+        return {"error": str(e)}

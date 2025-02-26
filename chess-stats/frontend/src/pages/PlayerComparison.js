@@ -84,11 +84,9 @@ function PlayerComparison() {
         <div className="mt-6 bg-white p-4 rounded shadow space-y-6">
           {/* Color-specific predictions */}
           <div>
-            <h3 className="text-xl font-bold mb-2">Color-Specific Prediction</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h4 className="font-semibold">{player1} as White</h4>
-                <p>Prediction: {comparisonResult.color_specific.player1_as_white.prediction}</p>
+                <h4 className="font-semibold">{player1}</h4>
                 <p>Top 5 Feature Contributions:</p>
                 <ul>
                   {comparisonResult.color_specific.player1_as_white.short_feature_contributions.map(([feature, value]) => (
@@ -97,8 +95,7 @@ function PlayerComparison() {
                 </ul>
               </div>
               <div>
-                <h4 className="font-semibold">{player2} as Black</h4>
-                <p>Prediction: {comparisonResult.color_specific.player2_as_black.prediction}</p>
+                <h4 className="font-semibold">{player2}</h4>
                 <p>Top 5 Feature Contributions:</p>
                 <ul>
                   {comparisonResult.color_specific.player2_as_black.short_feature_contributions.map(([feature, value]) => (
@@ -110,8 +107,7 @@ function PlayerComparison() {
           </div>
           {/* Color-agnostic prediction */}
           <div>
-            <h3 className="text-xl font-bold mb-2">Color-Agnostic Prediction</h3>
-            <p>Based solely on average ratings:</p>
+            <h3 className="text-xl font-bold mb-2">Prediction</h3>
             <p>{player1} Average Rating: {comparisonResult.color_agnostic.player1_average_rating}</p>
             <p>{player2} Average Rating: {comparisonResult.color_agnostic.player2_average_rating}</p>
             <p>Prediction: {comparisonResult.color_agnostic.prediction}</p>

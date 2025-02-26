@@ -87,7 +87,11 @@ def chess_stats():
         if cached_stats:
             return jsonify(cached_stats)
         else:
-            return jsonify({"error": "Statistics not found for the given username."}), 404
+            stats = get_detailed_stats(df_games, username)
+            if "error" in stats:
+                return jsonify(stats), 404
+            cache.set(cache_key, stats, timeout=60*60*24)  # Cache the computed stats
+            return jsonify(stats)
     except Exception as e:
         logger.exception("Error in /chess_stats endpoint")
         return jsonify({"error": str(e)}), 500
@@ -110,12 +114,25 @@ def kmeans_endpoint():
     if not data:
         return jsonify({"error": "Request body must be JSON."}), 415
     num_clusters = int(data.get("num_clusters", 3))
-    x_axis = data.get("x_axis", "avg_elo")
-    y_axis = data.get("y_axis", "avg_opponent_elo")
+    x_axis_param = data.get("x_axis", "avg_elo")
+    y_axis_param = data.get("y_axis", "avg_opponent_elo")
     reduction_method = data.get("reduction_method", "pca")
     plot_type = data.get("plot_type", "scatter")
     feature_set = data.get("feature_set", "default")
     use_all_features = feature_set == "all"
+
+    # Map frontend axis names to DataFrame column names
+    axis_mapping = {
+        "avg_elo": "avg_elo",
+        "avg_opponent_elo": "avg_opponent_elo",
+        "games": "games",
+        "total_games": "games"
+    }
+    x_axis = axis_mapping.get(x_axis_param)
+    y_axis = axis_mapping.get(y_axis_param)
+    if not x_axis or not y_axis:
+        return jsonify({"error": "Invalid x_axis or y_axis parameter."}), 400
+
     try:
         cache_key = f"kmeans_{num_clusters}_{x_axis}_{y_axis}_{reduction_method}_{plot_type}_{feature_set}"
         cached_result = cache.get(cache_key)

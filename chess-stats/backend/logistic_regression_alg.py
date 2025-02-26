@@ -112,16 +112,7 @@ def predict_logistic(model, scaler, feature_list, df_games, player1, player2):
             "result1": result1,
             "result2": result2,
             "overall_winner": overall_winner,
-            "color_specific": {
-                "player1_as_white": {
-                    "prediction": result1,
-                    "short_feature_contributions": short_fc1
-                },
-                "player2_as_black": {
-                    "prediction": result2,
-                    "short_feature_contributions": short_fc2
-                }
-            },
+
             "color_agnostic": {
                 "prediction": overall_agnostic,
                 "player1_average_rating": player1Stats["average_rating"],

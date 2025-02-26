@@ -27,16 +27,18 @@ def aggregate_player_features(df):
                     "games": 0,
                     "total_elo": 0,
                     "total_opp_elo": 0,
-                    "openings": [],       # accumulate openings
-                    "game_types": {}      # new field to count game variants
+                    "param1_values": [],  # NEW: store raw values
+                    "param2_values": [],  # NEW: store raw values
+                    "openings": [],
+                    "game_types": {}
                 }
             stats[player]["games"] += 1
             stats[player]["total_elo"] += player_elo
             stats[player]["total_opp_elo"] += opponent_elo
-            # Accumulate openings if available
+            stats[player]["param1_values"].append(row.get("Param1", 0))  # accumulate raw param1
+            stats[player]["param2_values"].append(row.get("Param2", 0))  # accumulate raw param2
             if "Opening" in df.columns and pd.notnull(row["Opening"]):
                 stats[player]["openings"].append(row["Opening"])
-            # Accumulate game variant counts if available
             if "Variant" in df.columns and pd.notnull(row["Variant"]):
                 variant = row["Variant"]
                 stats[player]["game_types"][variant] = stats[player]["game_types"].get(variant, 0) + 1
@@ -53,12 +55,17 @@ def aggregate_player_features(df):
             "games": s["games"],
             "avg_elo": s["total_elo"] / s["games"],
             "avg_opponent_elo": s["total_opp_elo"] / s["games"],
-            "most_common_opening": most_common_opening,  # new feature
-            "game_types": s["game_types"]                 # new feature for game variants
+            "param1": sum(s["param1_values"]) / s["games"],  # average of collected values
+            "param2": sum(s["param2_values"]) / s["games"],  # average of collected values
+            "param1_values": s["param1_values"],  # NEW: include raw values if needed
+            "param2_values": s["param2_values"],  # NEW: include raw values if needed
+            "most_common_opening": most_common_opening,
+            "game_types": s["game_types"]
         })
     df_features = pd.DataFrame(data)
     logger.info("Aggregated player features shape: %s", df_features.shape)
     return df_features
+
 
 def perform_kmeans(df, num_clusters, x_axis="avg_elo", y_axis="avg_opponent_elo", reduction_method="pca", plot_type="scatter", use_all_features=False):
     logger.info("Performing KMeans clustering with %d clusters", num_clusters)
@@ -84,9 +91,12 @@ def perform_kmeans(df, num_clusters, x_axis="avg_elo", y_axis="avg_opponent_elo"
             X_list.append(features)
         X = np.array(X_list)
     else:
-        if x_axis not in df.columns or y_axis not in df.columns:
+        # NEW: Map raw values fields to averaged fields if necessary.
+        x_col = x_axis.replace("_values", "") if x_axis.endswith("_values") else x_axis
+        y_col = y_axis.replace("_values", "") if y_axis.endswith("_values") else y_axis
+        if x_col not in df.columns or y_col not in df.columns:
             raise ValueError("Invalid x_axis or y_axis parameter.")
-        X = df[[x_axis, y_axis]].values
+        X = df[[x_col, y_col]].values
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
     # Use kmeans++ initialization.
@@ -94,19 +104,16 @@ def perform_kmeans(df, num_clusters, x_axis="avg_elo", y_axis="avg_opponent_elo"
     labels = kmeans.fit_predict(X_scaled)
     df["cluster"] = labels
 
-    # NEW: Generate cluster colors using the viridis palette
     cluster_colors = sns.color_palette("viridis", num_clusters).as_hex()  # list of hex colors
 
     sil_score = silhouette_score(X_scaled, labels)
     
-    # Dimensionality reduction using PCA.
     logger.info("Using PCA for dimensionality reduction")
     reducer = PCA(n_components=2, random_state=42)
     X_reduced = reducer.fit_transform(X_scaled)
     df["dim1"] = X_reduced[:, 0]
     df["dim2"] = X_reduced[:, 1]
 
-    # Generate scatter plot.
     logger.info("Generating scatter plot")
     plt.figure(figsize=(8, 6))
     sns.scatterplot(x="dim1", y="dim2", hue="cluster", data=df, palette="viridis")
@@ -117,17 +124,14 @@ def perform_kmeans(df, num_clusters, x_axis="avg_elo", y_axis="avg_opponent_elo"
     plot_base64 = base64.b64encode(buf.getvalue()).decode("utf-8")
     plt.close()
 
-    # Create a summary using the default numeric columns.
     cluster_summary = df.groupby("cluster").agg(
         avg_elo=("avg_elo", "mean"),
         avg_opponent_elo=("avg_opponent_elo", "mean"),
         player_count=("player", "count")
     ).reset_index().to_dict(orient="records")
-    # NEW: Append cluster color to each summary
     for summary in cluster_summary:
         summary["cluster_color"] = cluster_colors[int(summary["cluster"])]
 
-    # New code to compute all clusters' numeric profiles and a simple cluster key.
     numeric_cols = df.select_dtypes("number").columns
     cluster_profiles = df.groupby("cluster")[numeric_cols].mean().to_dict(orient="index")
     global_means = df[numeric_cols].mean()
@@ -139,7 +143,6 @@ def perform_kmeans(df, num_clusters, x_axis="avg_elo", y_axis="avg_opponent_elo"
             key_info[col] = "High" if val > global_means[col] else "Low"
         cluster_key[cluster] = key_info
 
-    # NEW: Compute detailed cluster statistics (including averages for games and game variant counts)
     detailed_cluster_stats = {}
     for cluster in sorted(df["cluster"].unique()):
         cluster_df = df[df["cluster"] == cluster]
@@ -153,7 +156,6 @@ def perform_kmeans(df, num_clusters, x_axis="avg_elo", y_axis="avg_opponent_elo"
                     game_types_sum[variant] = game_types_sum.get(variant, 0) + cnt
         # Compute average count per game type
         avg_game_types = {variant: total/len(cluster_df) for variant, total in game_types_sum.items()}
-        # NEW: Include cluster_color in detailed stats
         detailed_cluster_stats[cluster] = {
             "avg_games": avg_games,
             "avg_elo": avg_elo,
@@ -163,7 +165,6 @@ def perform_kmeans(df, num_clusters, x_axis="avg_elo", y_axis="avg_opponent_elo"
         }
     logger.info("KMeans clustering complete. Silhouette score: %.4f", sil_score)
     
-    # Convert keys to strings for JSON serialization
     cluster_profiles = {str(k): v for k, v in cluster_profiles.items()}
     cluster_key = {str(k): v for k, v in cluster_key.items()}
     detailed_cluster_stats = {str(k): v for k, v in detailed_cluster_stats.items()}

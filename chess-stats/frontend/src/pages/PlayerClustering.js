@@ -33,11 +33,12 @@ function PlayerClustering() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           num_clusters: Number(params.num_clusters),
-          x_axis: params.x_axis,
-          y_axis: params.y_axis,
+          x_axis: params.x_axis === "games" ? "total_games" : params.x_axis,
+          y_axis: params.y_axis === "games" ? "total_games" : params.y_axis,
+          use_all_features: params.feature_set === "all", // NEW: pass PCA-related flag
           reduction_method: "pca",
           plot_type: "scatter",
-          feature_set: params.feature_set   // pass the new parameter
+          feature_set: params.feature_set
         }),
       });
       if (!response.ok) {
@@ -95,13 +96,19 @@ function PlayerClustering() {
             <Plot
               data={[
                 {
-                  x: clusteringData.player_features.map((player) => player[params.x_axis]),
-                  y: clusteringData.player_features.map((player) => player[params.y_axis]),
+                  x: clusteringData.player_features.map((player) =>
+                    player[params.x_axis.endsWith("_values") ? params.x_axis.replace("_values", "") : params.x_axis]
+                  ),
+                  y: clusteringData.player_features.map((player) =>
+                    player[params.y_axis.endsWith("_values") ? params.y_axis.replace("_values", "") : params.y_axis]
+                  ),
                   text: clusteringData.player_features.map((player) => player.player),
                   mode: "markers",
                   marker: { 
                     size: 14, 
-                    color: clusteringData.player_features.map((player) => clusteringData.cluster_summary.find(cluster => cluster.cluster === player.cluster).cluster_color) 
+                    color: clusteringData.player_features.map((player) =>
+                      clusteringData.cluster_summary.find((cluster) => cluster.cluster === player.cluster).cluster_color
+                    ) 
                   },
                   type: "scatter",
                 },
@@ -120,7 +127,7 @@ function PlayerClustering() {
           <div className="mb-8">
             <h3 className="text-2xl font-semibold mb-4 text-center">Cluster Summaries</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {clusteringData.cluster_summary.map((cluster, index) => (
+              {clusteringData.cluster_summary.slice(0, 5).map((cluster, index) => (
                 <div key={index} className="bg-white p-6 rounded-lg shadow-lg">
                   <h4 className="font-bold text-xl mb-2">
                     <span style={{ backgroundColor: cluster.cluster_color, display: 'inline-block', width: '10px', height: '10px', marginRight: '8px' }}></span>
@@ -137,7 +144,7 @@ function PlayerClustering() {
           <div className="mb-8">
             <h3 className="text-2xl font-semibold mb-4 text-center">Detailed Cluster Stats</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {Object.entries(clusteringData.detailed_cluster_stats).map(([cluster, stats]) => (
+              {Object.entries(clusteringData.detailed_cluster_stats).slice(0, 5).map(([cluster, stats]) => (
                 <div key={cluster} className="bg-white p-6 rounded-lg shadow-lg">
                   <h4 className="font-bold text-xl mb-2">
                     <span style={{ backgroundColor: stats.cluster_color, display: 'inline-block', width: '10px', height: '10px', marginRight: '8px' }}></span>

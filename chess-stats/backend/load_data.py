@@ -4,7 +4,7 @@ import pandas as pd
 import logging
 
 df_games = None
-PGN_FILE = os.path.join("chess-stats/datasets", "example3.pgn")
+PGN_FILE = os.path.join("chess-stats/datasets", "example.pgn")
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 

@@ -17,7 +17,10 @@ function PlayerClustering() {
   const axisLabels = {
     avg_elo: "Average ELO",
     avg_opponent_elo: "Average Opponent ELO",
-    games: "Games Played"
+    games: "Games Played",
+    most_common_opening: "Most Common Opening",
+    opening_counts: "Opening Counts",
+    variant_counts: "Variant Counts"
   };
 
   const handleChange = (e) => {
@@ -75,11 +78,17 @@ function PlayerClustering() {
           <option value="avg_elo">Average ELO</option>
           <option value="avg_opponent_elo">Average Opponent ELO</option>
           <option value="games">Games Played</option>
+          <option value="most_common_opening">Most Common Opening</option>
+          <option value="opening_counts">Opening Counts</option>
+          <option value="variant_counts">Variant Counts</option>
         </select>
         <select name="y_axis" value={params.y_axis} onChange={handleChange} className="border p-2 m-2">
           <option value="avg_elo">Average ELO</option>
           <option value="avg_opponent_elo">Average Opponent ELO</option>
           <option value="games">Games Played</option>
+          <option value="most_common_opening">Most Common Opening</option>
+          <option value="opening_counts">Opening Counts</option>
+          <option value="variant_counts">Variant Counts</option>
         </select>
         <select name="feature_set" value={params.feature_set} onChange={handleChange} className="border p-2 m-2">
           <option value="default">Default Features</option>
@@ -166,6 +175,10 @@ function PlayerClustering() {
                 </div>
               ))}
             </div>
+          </div>
+          <div className="mb-8">
+            <h3 className="text-2xl font-semibold mb-4 text-center">Silhouette Score</h3>
+            <p className="text-center text-lg">{clusteringData.silhouette_score.toFixed(4)}</p>
           </div>
           {selectedPlayer && (
             <div className="mt-8">

@@ -38,9 +38,7 @@ function PlayerClustering() {
           num_clusters: Number(params.num_clusters),
           x_axis: params.x_axis === "games" ? "total_games" : params.x_axis,
           y_axis: params.y_axis === "games" ? "total_games" : params.y_axis,
-          use_all_features: params.feature_set === "all", // NEW: pass PCA-related flag
-          reduction_method: "pca",
-          plot_type: "scatter",
+          use_all_features: params.feature_set === "all",
           feature_set: params.feature_set
         }),
       });

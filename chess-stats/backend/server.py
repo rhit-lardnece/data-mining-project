@@ -139,7 +139,7 @@ def kmeans_endpoint():
         if cached_result:
             return jsonify(cached_result)
         df_features = aggregate_player_features(df_games)
-        kmeans_result = perform_kmeans(df_features, num_clusters, x_axis, y_axis, reduction_method, plot_type, use_all_features)
+        kmeans_result = perform_kmeans(df_features, num_clusters, x_axis, y_axis, use_all_features)
         cache.set(cache_key, kmeans_result, timeout=60*60*24)  
         return jsonify(kmeans_result)
     except Exception as e:
